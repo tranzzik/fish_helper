@@ -59,7 +59,7 @@ while True:
                 ss2 = pyautogui.screenshot('ss2.png', region=ssregion)
                 zdj2 = cv2.imread('ss2.png')
                 m = round(mse(zdj1, zdj2))
-                print(f'MSE: {m}', end='\r')
+                print(f'MSE: {m}      ', end='\r')
                 time.sleep(0.07)
 
                 if keyboard.is_pressed(pause_button):
@@ -75,15 +75,16 @@ while True:
                     time_lottery = random.randrange(1,20,1)
 
                     if time_lottery == 7:
-                        delay = random.randrange(4, 6, 1)/10 + random.randrange(0, 100, 1)/1000
+                        delay = random.randrange(1, 3, 1)/10 + random.randrange(0, 100, 1)/1000
                     else:
-                        #delay = random.randrange(160, 330, 1)/1000
-                        delay = random.randrange(10, 20, 1)/1000
+                        delay = random.randrange(60, 80, 1)/1000
+                        #delay = random.randrange(10, 20, 1)/1000
 
-                    buffer = random.randrange(1, 4, 1)/2 + random.randrange(0, 99, 1)/1000
+                    #buffer = random.randrange(1, 4, 1)/2 + random.randrange(0, 99, 1)/1000
+                    buffer = 0
                     print(f'Wyławiam z opóźnieniem: {delay}')
-                    pyautogui.click(button='right', x=x, y=y)
                     time.sleep(delay)
+                    pyautogui.click(button='right', x=x, y=y)
                     #wciska spacje na 0.1s
                     keyboard.press(57)
                     time.sleep(0.1)
@@ -95,7 +96,7 @@ while True:
                     time.sleep(0.1)
                     keyboard.release('2')
 
-                    pause_after(0.3 + buffer)
+                    pause_after(0.5 + buffer)
 
                     keyboard.press(57)
                     time.sleep(0.1)
