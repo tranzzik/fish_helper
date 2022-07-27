@@ -1,6 +1,6 @@
 import pyautogui
 import time
-import cv2
+#import cv2 no longer needed
 import random
 import numpy as np
 import keyboard
@@ -50,14 +50,16 @@ while True:
 
         time.sleep(1.5)
 
-        ss = pyautogui.screenshot('ss.png', region=ssregion)
-        zdj1 = cv2.imread('ss.png')
+        ss = pyautogui.screenshot(region=ssregion)
+        #zdj1 = cv2.imread('ss.png')
+        zdj1 = np.asarray(ss)
 
 
         while True:
             try:
-                ss2 = pyautogui.screenshot('ss2.png', region=ssregion)
-                zdj2 = cv2.imread('ss2.png')
+                ss2 = pyautogui.screenshot(region=ssregion)
+                #zdj2 = cv2.imread('ss2.png')
+                zdj2 = np.asarray(ss2)
                 m = round(mse(zdj1, zdj2))
                 print(f'MSE: {m}      ', end='\r')
                 time.sleep(0.07)
@@ -104,8 +106,10 @@ while True:
                     
                     pause_after(3.5)
 
-                    ss = pyautogui.screenshot('ss.png', region=ssregion)
-                    zdj1 = cv2.imread('ss.png')
+                    ss = pyautogui.screenshot(region=ssregion)
+                    #zdj1 = cv2.imread('ss.png')
+                    zdj1 = np.asarray(ss)
+
             except PauseWhenCaught:
                 break
     
