@@ -1,6 +1,5 @@
 import pyautogui
 import time
-#import cv2 no longer needed
 import random
 import numpy as np
 import keyboard
@@ -15,7 +14,11 @@ print(r"""
 
 """)
 
-pause_button = 'left ctrl'
+print('-' * 50)
+print("PROGRAM DZIAŁA TYLKO PO URUCHOMIENIU JAKO ADMINISTRATOR")
+print('-' * 50, end='\n')
+
+PAUSE_BUTTON = 'left ctrl'
 
 class PauseWhenCaught(Exception): pass
 
@@ -25,23 +28,42 @@ def mse(imageA, imageB):
     err = err / float(imageA.shape[0]*imageA.shape[1])
     return err
 
-#dziala jak time.sleep, z tym, ze pauzuje program gdy wykryje w tym czasie przycisniecie guzika pause_button
+#dziala jak time.sleep, z tym, ze pauzuje program gdy wykryje w tym czasie przycisniecie guzika PAUSE_BUTTON
 def pause_after(pause_time):
     start_time = time.time()
     while time.time() < start_time + pause_time:
-        if keyboard.is_pressed(pause_button):
-            while keyboard.is_pressed(pause_button):
+        if keyboard.is_pressed(PAUSE_BUTTON):
+            while keyboard.is_pressed(PAUSE_BUTTON):
                 pass
                 time.sleep(0.1)
             print("Pauzuję program!")
-            time.sleep(5)
+            time.sleep(3)
             raise PauseWhenCaught
+        time.sleep(0.08)
 
-print("Umieść kursor troszkę nad głową postaci (tam gdzie pojawia się emotka ryby) i wciśnij lewy ctrl.")
+def choose_delay():
+    print("""
+        1. Sorta realistic (100-150ms + detection time)
+        2. Less realistic (60-80ms + detection time)
+        3. Zero added delay, fast as fuck!!!
+        """)
+    while True:
+        picked_option = input("Pick the delay after which to pull out the fish: ")
+        if picked_option == '1':
+            return 100, 150
+        if picked_option == '2':
+            return 60, 80
+        if picked_option == '3':
+            return 0, 1
+        
+DELAY_LOWER, DELAY_HIGHER = choose_delay()
+
+CHECK_FREQUENCY = 60
+
+print("\nUmieść kursor troszkę nad głową postaci (tam gdzie pojawia się emotka ryby) i wciśnij lewy ctrl.")
 keyboard.wait('left ctrl')
-x, y = pyautogui.position()
-ssregion = (x-45, y-45, 90, 90)
-#old region = (820,315,90,90)
+_x, _y = pyautogui.position()
+ssregion = (_x-45, _y-45, 90, 90)
 
 while True:
     try:
@@ -51,42 +73,51 @@ while True:
         time.sleep(1.5)
 
         ss = pyautogui.screenshot(region=ssregion)
-        #zdj1 = cv2.imread('ss.png')
         zdj1 = np.asarray(ss)
-
+        startTime = time.time()
 
         while True:
             try:
                 ss2 = pyautogui.screenshot(region=ssregion)
-                #zdj2 = cv2.imread('ss2.png')
                 zdj2 = np.asarray(ss2)
                 m = round(mse(zdj1, zdj2))
                 print(f'MSE: {m}      ', end='\r')
-                time.sleep(0.07)
+                runTime = time.time() - startTime
+                time.sleep(1/CHECK_FREQUENCY)
 
-                if keyboard.is_pressed(pause_button):
-                    while keyboard.is_pressed(pause_button):
+                if keyboard.is_pressed(PAUSE_BUTTON):
+                    while keyboard.is_pressed(PAUSE_BUTTON):
                         pass
                         time.sleep(0.1)
                     print("Pauzuję program!")
                     time.sleep(5)
                     break
 
+                if runTime > 60:
+                    print("\nNie wykryto ryby przez ponad 60 sekund. Zarzucam ponownie. Jeśli problem się powtarza, zrestartuj grę.")
+                    pyautogui.click(button='right', x=_x, y=_y)
+                    
+                    keyboard.press('2')
+                    time.sleep(0.1)
+                    keyboard.release('2')
+
+                    pause_after(0.3)
+
+                    keyboard.press(57)
+                    time.sleep(0.1)
+                    keyboard.release(57)
+                    startTime = time.time()
+
                 if m > 11000:
                     print("\nWykryto rybę!")
-                    time_lottery = random.randrange(1,20,1)
 
-                    if time_lottery == 7:
-                        delay = random.randrange(1, 3, 1)/10 + random.randrange(0, 100, 1)/1000
-                    else:
-                        delay = random.randrange(60, 80, 1)/1000
-                        #delay = random.randrange(10, 20, 1)/1000
+                    delay = random.randrange(DELAY_LOWER, DELAY_HIGHER, 1)/1000
 
-                    #buffer = random.randrange(1, 4, 1)/2 + random.randrange(0, 99, 1)/1000
+                    #buffer to dodatkowy losowy delay przed zarzuceniem wędki
                     buffer = 0
                     print(f'Wyławiam z opóźnieniem: {delay}')
                     time.sleep(delay)
-                    pyautogui.click(button='right', x=x, y=y)
+                    pyautogui.click(button='right', x=_x, y=_y)
                     #wciska spacje na 0.1s
                     keyboard.press(57)
                     time.sleep(0.1)
@@ -107,8 +138,9 @@ while True:
                     pause_after(3.5)
 
                     ss = pyautogui.screenshot(region=ssregion)
-                    #zdj1 = cv2.imread('ss.png')
+
                     zdj1 = np.asarray(ss)
+                    startTime = time.time()
 
             except PauseWhenCaught:
                 break
